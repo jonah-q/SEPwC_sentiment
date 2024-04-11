@@ -6,19 +6,28 @@ library(dplyr)
 library(tidyr)
 library(argparse)
 library(ggpubr)
+library(stringr)            
 })
 
 library(tidyverse)
+library(tidytext)
+library(stringr)            
 
-# Load tweet content from toots.csv
+# Loads correct columns and cleans data
+
 load_data <- function(filename) {
   read_csv(filename) %>%
-  select(id, created_at, language, content) %>%
-  print(n=10)
-  return()
+    select(id, created_at, language, content) %>%
+    filter(language == "en") %>% 
+    mutate(content = tolower(content)) %>%
+    str_replace_all(content, "[^[:alnum:]]", "") %>% 
+    print(n=10)
 }
 
-load_data("data/toots.csv")
+cleaned_data <- load_data("data/toots.csv")
+
+
+
   
 word_analysis <- function(toot_data, emotion) {
 
