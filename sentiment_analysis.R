@@ -8,17 +8,24 @@ library(argparse)
 library(ggpubr)
 })
 
-load_data<-function(filename) {
+library(tidyverse)
+
+# Load tweet content from toots.csv
+load_data <- function(filename) {
+  read_csv(filename) %>%
+  select(id, created_at, language, content) %>%
+  print(n=10)
+  return()
+}
+
+load_data("data/toots.csv")
+  
+word_analysis <- function(toot_data, emotion) {
 
     return()
 }
 
-word_analysis<-function(toot_data, emotion) {
-
-    return()
-}
-
-sentiment_analysis<-function(toot_data) {
+sentiment_analysis <- function(toot_data) {
 
     return()
 
