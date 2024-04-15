@@ -23,13 +23,13 @@ load_data <- function(filename) {
   read.csv(filename) %>%
     select(id, created_at, language, content) %>%
     filter(language == "en") %>% 
+    mutate(id = as.character(id)) %>%
+    mutate(created_at = as_datetime(created_at)) %>% 
     mutate(content = replace_html(content)) %>%
     mutate(content = replace_white(content)) %>% 
-    mutate(content = str_replace_all(content, "# ", "#")) 
+    mutate(content = str_replace_all(content, "# ", "#")) %>% 
+    print.data.frame
 }
-
-cleaned_data <- load_data("data/toots.csv")
-
 
 
   
