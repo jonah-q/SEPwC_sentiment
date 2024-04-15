@@ -11,17 +11,21 @@ library(stringr)
 
 library(tidyverse)
 library(tidytext)
-library(stringr)            
+library(stringr)
+library(tm)
+library(textclean)
+
+# https://cran.r-project.org/web/packages/textclean/readme/README.html
 
 # Loads correct columns and cleans data
 
 load_data <- function(filename) {
-  read_csv(filename) %>%
+  read.csv(filename) %>%
     select(id, created_at, language, content) %>%
     filter(language == "en") %>% 
-    mutate(content = tolower(content)) %>%
-    str_replace_all(content, "[^[:alnum:]]", "") %>% 
-    print(n=10)
+    mutate(content = replace_html(content)) %>%
+    mutate(content = replace_white(content)) %>% 
+    mutate(content = str_replace_all(content, "# ", "#")) 
 }
 
 cleaned_data <- load_data("data/toots.csv")
