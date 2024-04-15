@@ -26,12 +26,14 @@ load_data <- function(filename) {
     mutate(id = as.character(id)) %>%
     mutate(created_at = as_datetime(created_at)) %>% 
     mutate(content = replace_html(content)) %>%
-    mutate(content = replace_white(content)) %>% 
     mutate(content = str_replace_all(content, "# ", "#")) %>% 
-    print.data.frame
+    mutate(content = replace_hash(content)) %>%
+    mutate(content = replace_white(content)) 
 }
 
+cleaned_data <- load_data(test_data)
 
+# https://ladal.edu.au/sentiment.html
   
 word_analysis <- function(toot_data, emotion) {
 
