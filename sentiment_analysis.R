@@ -14,6 +14,8 @@ library(tidytext)
 library(stringr)
 library(tm)
 library(textclean)
+library(textdata)
+library(sentimentr)
 
 # https://cran.r-project.org/web/packages/textclean/readme/README.html
 
@@ -35,10 +37,11 @@ cleaned_data <- load_data(test_data)
 
 # https://ladal.edu.au/sentiment.html
   
-word_analysis <- function(toot_data, emotion) {
-
-    return()
+word_analysis <- function(toot_data) {
+  
 }
+
+word_analysis(cleaned_data)
 
 sentiment_analysis <- function(toot_data) {
 
