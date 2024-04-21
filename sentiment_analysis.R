@@ -18,8 +18,11 @@ library(textdata)
 library(sentimentr)
 
 # https://cran.r-project.org/web/packages/textclean/readme/README.html
+# https://ladal.edu.au/sentiment.html
 
-# Loads correct columns and cleans data
+# Loads correct columns and cleans data #
+
+test_data <- "data/test_toots.csv"
 
 load_data <- function(filename) {
   read.csv(filename) %>%
@@ -35,13 +38,45 @@ load_data <- function(filename) {
 
 cleaned_data <- load_data(test_data)
 
-# https://ladal.edu.au/sentiment.html
+
+# Tokenising words from toots for analysis
+# Method used from:
+# https://www.stephaniehicks.com/jhustatcomputing2022/posts/2022-10-13-working-with-text-sentiment-analysis/ 
   
-word_analysis <- function(toot_data) {
-  
+word_analysis <- function(toot_data, emotion) {
+  cleaned_data %>% 
+    unnest_tokens(output = word,
+                  input = content,
+                  token = "words") %>%
+    anti_join(stop_words) %>%
+    inner_join(get_sentiments("nrc"), 
+               by = "word", 
+               relationship = "many-to-many") # Filters to words showing sentiment
 }
 
-word_analysis(cleaned_data)
+word_data <- word_analysis(cleaned_data, "joy")
+head(word_data, n=10L)
+
+## Clarify - is it top 10 words per toot? or top 10 overall? ##
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 sentiment_analysis <- function(toot_data) {
 

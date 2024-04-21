@@ -28,7 +28,7 @@ cleaned_data <- load_data(test_data)
 head(cleaned_data)
 
 
-# Tokenising words from toots for analysis
+# Tokenising words from toots for analysis #
 # Method used from:
 # https://www.stephaniehicks.com/jhustatcomputing2022/posts/2022-10-13-working-with-text-sentiment-analysis/ 
 
