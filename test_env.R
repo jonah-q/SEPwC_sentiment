@@ -34,19 +34,20 @@ head(cleaned_data)
 
 
 word_analysis <- function(toot_data, emotion) {
-  cleaned_data %>% 
-     unnest_tokens(output = word,
+  cleaned_data %>%
+    ungroup %>% 
+    unnest_tokens(output = word,
                    input = content,
-                   token = "words") %>%
+                   token = "words") %>% #data loss somewhere around here#
     anti_join(stop_words) %>%
     inner_join(get_sentiments("nrc"), 
                by = "word", 
-               relationship = "many-to-many") # Filters to words showing sentiment
+               relationship = "many-to-many") %>%      # Filters to words showing sentiment
+    select(id, created_at, language, word, sentiment)
 }
 
-word_data <- word_analysis(cleaned_data, "anger")
-head(word_data, n=10)
+word_data <- word_analysis(cleaned_data, "joy")
+head(word_data)
 
 filter(sentiment == emotion) %>% 
   count(word, sort = TRUE)  
-
