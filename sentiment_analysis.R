@@ -48,27 +48,46 @@ word_analysis <- function(toot_data, emotion) {
     ungroup %>% 
     unnest_tokens(output = word,
                   input = content,
-                  token = "words") %>% #data loss somewhere around here#
+                  token = "words") %>%
     anti_join(stop_words) %>%
     inner_join(get_sentiments("nrc"), 
                by = "word", 
-               relationship = "many-to-many") %>%  # Filters to words showing sentiment
+               relationship = "many-to-many") %>%      # Filters to words showing sentiment
     select(id, created_at, language, word, sentiment) %>% 
-    filter(sentiment == emotion) 
+    filter(sentiment == emotion)
 }
 
 word_data <- word_analysis(cleaned_data, "joy")
-head(word_data)
+print(word_data)
+
+top_10_words <- word_data %>% 
+  count(word, sort = TRUE)
+
+head(top_10_words)
 
 
-
-
-
+# How do I make this add a column for each type of analysis?
 sentiment_analysis <- function(toot_data) {
-
-    return()
-
+  cleaned_data %>%
+    ungroup %>% 
+    unnest_tokens(output = word,
+                  input = content,
+                  token = "words") %>%
+    anti_join(stop_words) %>% 
+    inner_join(get_sentiments("bing"), 
+               by = "word", 
+               relationship = "many-to-many") %>% 
+  inner_join(get_sentiments("nrc"), 
+             by = "word", 
+             relationship = "many-to-many") %>% 
+  inner_join(get_sentiments("afinn"), 
+             by = "word", 
+             relationship = "many-to-many")
 }
+
+sentiment_data <- sentiment_analysis(cleaned_data)
+head(sentiment_data)
+
 
 main <- function(args) {
 
