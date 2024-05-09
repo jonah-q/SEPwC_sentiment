@@ -1,15 +1,28 @@
+suppressPackageStartupMessages({
+  library(sentimentr)
+  library(tidytext)
+  library(lubridate)
+  library(dplyr)
+  library(tidyr)
+  library(argparse)
+  library(ggpubr)
+  library(stringr)            
+})
+
 library(tidyverse)
 library(tidytext)
 library(stringr)
 library(tm)
 library(textclean)
-library(lubridate)
+library(textdata)
+library(sentimentr)
 
+# https://cran.r-project.org/web/packages/textclean/readme/README.html
+# https://ladal.edu.au/sentiment.html
 
+# Loads correct columns and cleans data #
 
-test_data <- "data/toots.csv"
-
-# Loads correct columns and cleans data
+test_data <- "data/test_toots.csv"
 
 load_data <- function(filename) {
   read.csv(filename) %>%
@@ -20,34 +33,94 @@ load_data <- function(filename) {
     mutate(content = replace_html(content)) %>%
     mutate(content = str_replace_all(content, "# ", "#")) %>% 
     mutate(content = replace_hash(content)) %>%
-    mutate(content = replace_white(content))
+    mutate(content = replace_white(content)) 
 }
 
 cleaned_data <- load_data(test_data)
 
-head(cleaned_data)
 
-
-# Tokenising words from toots for analysis #
+# Tokenising words from toots for analysis
 # Method used from:
 # https://www.stephaniehicks.com/jhustatcomputing2022/posts/2022-10-13-working-with-text-sentiment-analysis/ 
 
-
 word_analysis <- function(toot_data, emotion) {
-  cleaned_data %>%
+  toot_data %>%
     ungroup %>% 
     unnest_tokens(output = word,
-                   input = content,
-                   token = "words") %>% #data loss somewhere around here#
+                  input = content,
+                  token = "words") %>%
     anti_join(stop_words) %>%
     inner_join(get_sentiments("nrc"), 
                by = "word", 
                relationship = "many-to-many") %>%      # Filters to words showing sentiment
-    select(id, created_at, language, word, sentiment)
+    select(id, created_at, language, word, sentiment) %>% 
+    filter(sentiment == emotion)
 }
 
 word_data <- word_analysis(cleaned_data, "joy")
-head(word_data)
+print(word_data)
 
-filter(sentiment == emotion) %>% 
-  count(word, sort = TRUE)  
+top_10_words <- word_data %>% 
+  count(word, sort = TRUE)
+
+head(top_10_words)
+
+# Make all sentiments seperatetly then join output columns together to producse final readout.
+# Make seperate variabels.
+
+# analyse sentiments with bing
+bing_analysis <- function(toot_data) {
+  toot_data %>%
+    ungroup %>% 
+    unnest_tokens(output = word,
+                  input = content,
+                  token = "words") %>%
+    anti_join(stop_words) %>% 
+    inner_join(get_sentiments("bing"), 
+               by = "word", 
+               relationship = "many-to-many") %>% 
+    arrange(id, "descending")
+}
+
+bing_data <- bing_analysis(cleaned_data)
+head(bing_data)
+
+# Analyse sentiments with nrc
+nrc_analysis <- function(toot_data) {
+  cleaned_data %>%
+    ungroup %>% 
+    unnest_tokens(output = word,
+                  input = content,
+                  token = "words") %>%
+    anti_join(stop_words) %>% 
+    inner_join(get_sentiments("nrc"), 
+               by = "word", 
+               relationship = "many-to-many")
+}
+
+nrc_data <- nrc_analysis(cleaned_data)
+head(nrc_data)
+
+# Analyse snetiments with afinn
+afinn_analysis <- function(toot_data) {
+  cleaned_data %>%
+    ungroup %>% 
+    unnest_tokens(output = word,
+                  input = content,
+                  token = "words") %>%
+    anti_join(stop_words) %>% 
+    inner_join(get_sentiments("afinn"), 
+               by = "word", 
+               relationship = "many-to-many")
+}
+
+afinn_data <- afinn_analysis(cleaned_data)
+head(afinn_data)
+
+
+sentiment_analysis <- function(bing_sentiment, nrc_sentiment, afinn_sentiment) {
+
+}
+
+sentiment_data <- sentiment_analysis(cleaned_data)
+head(sentiment_data)
