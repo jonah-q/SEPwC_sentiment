@@ -65,62 +65,22 @@ top_10_words <- word_data %>%
 
 head(top_10_words)
 
-# Make all sentiments seperatetly then join output columns together to producse final readout.
-# Make seperate variabels.
+# Function to measure sentiment using "nrc", "bing", and "afinn" methods.
 
-# analyse sentiments with bing
-bing_analysis <- function(toot_data) {
-  toot_data %>%
-    ungroup %>% 
-    unnest_tokens(output = word,
-                  input = content,
-                  token = "words") %>%
-    anti_join(stop_words) %>% 
-    inner_join(get_sentiments("bing"), 
-               by = "word", 
-               relationship = "many-to-many") %>% 
-    arrange(id, "descending")
-}
-
-bing_data <- bing_analysis(cleaned_data)
-head(bing_data)
-
-# Analyse sentiments with nrc
-nrc_analysis <- function(toot_data) {
-  cleaned_data %>%
-    ungroup %>% 
-    unnest_tokens(output = word,
-                  input = content,
-                  token = "words") %>%
-    anti_join(stop_words) %>% 
-    inner_join(get_sentiments("nrc"), 
-               by = "word", 
-               relationship = "many-to-many")
-}
-
-nrc_data <- nrc_analysis(cleaned_data)
-head(nrc_data)
-
-# Analyse snetiments with afinn
-afinn_analysis <- function(toot_data) {
-  cleaned_data %>%
-    ungroup %>% 
-    unnest_tokens(output = word,
-                  input = content,
-                  token = "words") %>%
-    anti_join(stop_words) %>% 
-    inner_join(get_sentiments("afinn"), 
-               by = "word", 
-               relationship = "many-to-many")
-}
-
-afinn_data <- afinn_analysis(cleaned_data)
-head(afinn_data)
-
-
-sentiment_analysis <- function(bing_sentiment, nrc_sentiment, afinn_sentiment) {
-
+sentiment_analysis <- function(toot_data) {
+  methods <- c("nrc", "bing", "afinn")
+  for (method in methods) {
+    toot_data %>%
+      ungroup %>% 
+      unnest_tokens(output = word,
+                    input = content,
+                    token = "words") %>%
+      anti_join(stop_words) %>% 
+      inner_join(get_sentiments(method), 
+                 by = "word", 
+                 relationship = "many-to-many") %>% 
+    print()
+  }
 }
 
 sentiment_data <- sentiment_analysis(cleaned_data)
-head(sentiment_data)
