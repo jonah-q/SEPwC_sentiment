@@ -78,7 +78,8 @@ sentiment_analysis <- function(toot_data) {
       anti_join(stop_words) %>% 
       inner_join(get_sentiments(method), 
                  by = "word", 
-                 relationship = "many-to-many") %>% 
+                 relationship = "many-to-many") %>%
+      mutate(method = method) %>% 
     print()
   }
 }
