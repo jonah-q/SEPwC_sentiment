@@ -22,8 +22,6 @@ library(sentimentr)
 
 # Loads correct columns and cleans data #
 
-test_data <- "data/test_toots.csv"
-
 load_data <- function(filename) {
   read.csv(filename) %>%
     select(id, created_at, language, content) %>%
@@ -36,15 +34,13 @@ load_data <- function(filename) {
            content = replace_white(content))
 }
 
-cleaned_data <- load_data(test_data)
-
 # Tokenising words from toots for analysis
 # Method used from:
 # https://www.stephaniehicks.com/jhustatcomputing2022/posts/2022-10-13-working-with-text-sentiment-analysis/ 
 
 word_analysis <- function(toot_data, emotion) {
   toot_data %>%
-    ungroup %>% 
+    ungroup() %>% 
     unnest_tokens(output = word,
                   input = content,
                   token = "words") %>%
@@ -56,17 +52,7 @@ word_analysis <- function(toot_data, emotion) {
     filter(sentiment == emotion)
 }
 
-word_data <- word_analysis(cleaned_data, "joy")
-print(word_data)
-
-# Display top 10 words for given sentiment
-top_10_words <- word_data %>% 
-  count(word, sort = TRUE)
-
-head(top_10_words, n=10)
-
-# Function to measure sentiment using "nrc", "bing", and "afinn" methods.
-
+# Function to measure sentiment using "nrc", "bing", and "afinn" methods. Storing results as a list then binding.
 sentiment_analysis <- function(toot_data, methods = c("afinn", "nrc", "bing")) {
   results <- list()
   for (method in methods) {
@@ -85,12 +71,13 @@ sentiment_analysis <- function(toot_data, methods = c("afinn", "nrc", "bing")) {
   bind_rows(results)
 }
 
-sentiment_data <- sentiment_analysis(cleaned_data)
-print(sentiment_data)
-
-
 main <- function(args) {
-
+  toot_data <- load_data(args$filename)
+  word_data <- word_analysis(toot_data, args$emotion)
+  top_10_words <- word_data %>% 
+    count(word, sort = TRUE)
+  print(head(top_10_words, no = 10))
+  sentiment_data <- sentiment_analysis(toot_data)
 }
 
 
