@@ -10,11 +10,7 @@ suppressPackageStartupMessages({
 })
 
 library(tidyverse)
-library(tidytext)
-library(stringr)
-library(tm)
 library(textclean)
-library(textdata)
 library(sentimentr)
 
 # https://cran.r-project.org/web/packages/textclean/readme/README.html
@@ -71,6 +67,24 @@ sentiment_analysis <- function(toot_data, methods = c("afinn", "nrc", "bing")) {
   bind_rows(results)
 }
 
+
+# Function to plot toot sentiment against hour of publishing
+
+plot_sentiment_by_hour <- function(sentiment_data) {
+  sentiment_data %>%
+    mutate(hour = hour(created_at)) %>%
+    group_by(hour, method) %>%
+    summarise(sentiment_score = sum(value, na.rm = TRUE), .groups = 'drop') %>%
+    ggplot(aes(x = hour, y = sentiment_score, color = method)) +
+    geom_point() +
+    facet_wrap(~ method, scales = "free_y") +
+    theme_minimal() +
+    labs(title = "Sentiment Score by Hour of Publishing",
+         x = "Hour of Day",
+         y = "Sentiment Score")
+}
+
+  
 main <- function(args) {
   toot_data <- load_data(args$filename)
   word_data <- word_analysis(toot_data, args$emotion)
@@ -78,8 +92,12 @@ main <- function(args) {
     count(word, sort = TRUE)
   print(head(top_10_words, no = 10))
   sentiment_data <- sentiment_analysis(toot_data)
+  if (!is.null(args$plot)) {
+    plot_filename <- args$plot
+    plot <- plot_sentiment_by_hour(sentiment_data)
+    ggsave(plot_filename, plot = plot)
+  }
 }
-
 
 if(sys.nframe() == 0) {
 
@@ -89,6 +107,7 @@ if(sys.nframe() == 0) {
                     description="Analyse toots for word and sentence sentiments"
                     )
   parser$add_argument("filename",
+                    default="data/test_toots.csv",
                     help="the file to read the toots from")
   parser$add_argument("--emotion",
                       default="anger",
