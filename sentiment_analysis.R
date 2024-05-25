@@ -70,20 +70,40 @@ sentiment_analysis <- function(toot_data, methods = c("afinn", "nrc", "bing")) {
 
 # Function to plot toot sentiment against hour of publishing
 
-plot_sentiment_by_hour <- function(sentiment_data) {
-  sentiment_data %>%
-    mutate(hour = hour(created_at)) %>%
-    group_by(hour, method) %>%
-    summarise(sentiment_score = sum(value, na.rm = TRUE), .groups = 'drop') %>%
-    ggplot(aes(x = hour, y = sentiment_score, color = method)) +
+plot_sentiment_by_hour <- function(data_to_plot, plot_filename) {
+  nrc_plot <- data_to_plot %>% 
+    filter(method == "nrc") %>%
+    filter(sentiment %in% c("positive",
+                            "negative")) %>% 
+    count(id, time = created_at, method, sentiment) %>%
+    pivot_wider(names_from = sentiment,
+                values_from = n,
+                values_fill = 0) %>%
+    mutate(sentiment = positive - negative)
+  bing_plot <- data_to_plot %>% # Plot bing sentiment  
+    filter(method == "bing") %>%
+    count(id, time = created_at, method, sentiment) %>%
+    pivot_wider(names_from = sentiment,
+                values_from = n,
+                values_fill = 0) %>%
+    mutate(sentiment = positive - negative)
+  afinn_plot <- data_to_plot %>% 
+    filter(method == "afinn") %>% 
+    group_by(time = created_at) %>% 
+    summarise(sentiment = sum(value))
+  final <- bind_rows(nrc_plot,
+            bing_plot,
+            afinn_plot)
+  ggplot(final,
+         aes(x=time,
+             y=sentiment)) +
     geom_point() +
-    facet_wrap(~ method, scales = "free_y") +
-    theme_minimal() +
-    labs(title = "Sentiment Score by Hour of Publishing",
-         x = "Hour of Day",
-         y = "Sentiment Score")
+    geom_text(aes(label=id),
+              position = position_nudge(y = 0.7)) +
+    facet_wrap(~method,
+               ncol = 2,
+               scales = "free_x")
 }
-
   
 main <- function(args) {
   toot_data <- load_data(args$filename)
