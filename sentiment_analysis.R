@@ -17,7 +17,7 @@ library(lintr)
 # https://cran.r-project.org/web/packages/textclean/readme/README.html
 # https://ladal.edu.au/sentiment.html
 
-# Loads correct columns and cleans data #
+# Loads correct columns and cleans data
 
 load_data <- function(filename) {
   read.csv(filename) %>%
@@ -47,12 +47,14 @@ word_analysis <- function(toot_data, emotion) {
     anti_join(stop_words) %>%
     inner_join(get_sentiments("nrc"),
                by = "word",
-               relationship = "many-to-many") %>% # Filters to words showing sentiment
+               relationship = "many-to-many") %>%
     select(id, created_at, language, word, sentiment) %>%
     filter(sentiment == emotion)
 }
 
-# Function to measure sentiment using "nrc", "bing", and "afinn" methods. Storing results as a list then binding.
+# Function to measure sentiment using "nrc", "bing", and "afinn" methods.
+# Storing results as a list then binding.
+
 sentiment_analysis <- function(toot_data, methods = c("afinn", "nrc", "bing")) {
   results <- list()
   for (method in methods) {
@@ -84,17 +86,18 @@ plot_sentiment_by_hour <- function(data_to_plot, plot_filename) {
                 values_from = n,
                 values_fill = 0) %>%
     mutate(sentiment = positive - negative)
-  bing_plot <- data_to_plot %>% # Plot bing sentiment
+  bing_plot <- data_to_plot %>%
     filter(method == "bing") %>%
     count(id, time = created_at, method, sentiment) %>%
     pivot_wider(names_from = sentiment,
                 values_from = n,
                 values_fill = 0) %>%
     mutate(sentiment = positive - negative)
-  afinn_plot <- data_to_plot %>% 
+  afinn_plot <- data_to_plot %>%
     filter(method == "afinn") %>%
-    group_by(time = created_at) %>% 
-    summarise(sentiment = sum(value))
+    group_by(time = created_at) %>%
+    summarise(sentiment = sum(value)) %>%
+    ggtitle(method)
   final <- bind_rows(nrc_plot,
                      bing_plot,
                      afinn_plot)
@@ -126,7 +129,7 @@ main <- function(args) {
 if (sys.nframe() == 0) {
 
   # main program, called via Rscript
-  parser <-  ArgumentParser(prog  ="Sentiment Analysis",
+  parser <-  ArgumentParser(prog  = "Sentiment Analysis",
                             description = "Analyse toots for word and sentence sentiments")
   parser$add_argument("filename",
                       default = "data/test_toots.csv",
@@ -138,7 +141,8 @@ if (sys.nframe() == 0) {
                       action = "store_true",
                       help = "Print progress")
   parser$add_argument("-p", "--plot",
-                      help = "Plot something. Give the filename")
+                      help = "Plot something. Give the filename",
+                      default = "test.pdf")
 
   args <-  parser$parse_args()
   main(args)
